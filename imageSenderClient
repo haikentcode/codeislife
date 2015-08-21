@@ -1,0 +1,129 @@
+    import java.awt.*;
+    import java.awt.image.*;
+    import java.io.*;
+    import java.util.*;
+    import javax.imageio.*;
+    import java.net.*;
+    import javax.swing.*;
+    
+
+public class imageSenderClient{
+
+    final static int NbrToSend = 20;
+    final static int port =4444;
+    JScrollPane scrollPane;
+    JLabel label;
+    JFrame frame;
+    
+    
+
+
+
+
+
+    class ClientSide 
+    {
+
+    Dimension dim;
+    Rectangle captureSize;
+    BufferedImage bufferedImage;
+    InputStream in;
+    String IP;
+    
+    
+String getString() throws IOException {
+    byte[] strIn = new byte[100];
+    int ix = 0;
+    while(true) {
+    int rd = in.read();
+    if((rd == (int)'\n') || (rd < 0))
+    break;
+    strIn[ix++] = (byte)rd;
+    }
+    System.out.println("created str ix=" + ix);
+    if(ix == 0)
+    return null;
+    return new String(strIn, 0, ix);
+    }
+
+    public ClientSide() {
+                      try{
+                           Robot robot = new Robot();
+
+                           dim = new Dimension(Toolkit.getDefaultToolkit().getScreenSize()); //toolkit.getScreenSize();
+                           captureSize = new Rectangle(dim);
+                           IP=new String("");
+                           JOptionPane jop;
+    	                   jop=new JOptionPane();
+    	                   jop.showInputDialog("Server IP Addres IS",IP);
+                           
+                           Socket soc = new Socket(IP, port);
+                           OutputStream out = soc.getOutputStream();
+                           in = soc.getInputStream();
+    
+ 
+
+                            while(true) {
+
+                                   bufferedImage = robot.createScreenCapture(captureSize);
+
+                                   System.out.println("Captured image!");
+
+                                   ByteArrayOutputStream byteArrayO = new ByteArrayOutputStream();
+
+                                   ImageIO.write(bufferedImage,"jpg",byteArrayO);
+
+                                   byte [] byteArray = byteArrayO.toByteArray();
+
+                                   String str = "image " + dim.width + "x" + dim.height+ " " 
+                                              + (byteArray.length)+"\n";
+    
+                                    byte[] strB = str.getBytes();
+                             
+                                    out.write(strB);
+                        
+                                    // writer.println(str);
+    
+                                    System.out.println("sent: " + str + " nbrBytes=" + strB.length);
+    
+                                    out.write(byteArray);
+
+                                    System.out.println("Sent image! nbrBytes=" + byteArray.length);
+    
+                                    //out.flush();
+
+                           } // end for(i)
+    
+                      }catch(Exception x) {
+                                   x.printStackTrace();
+                               }
+
+
+                        }
+              } // end class ClientSide
+    //------------------------------------------------------------------------
+
+
+
+public imageSenderClient() 
+             {
+                  Thread t2 = new Thread(new Runnable(){
+                 
+                  public void run() {
+                                       new ClientSide();
+                                    }
+                         });
+
+                     t2.start();
+            }
+  
+  
+    public static void main(String[] args) {
+                               
+                                new imageSenderClient();
+    
+            }
+
+
+
+}

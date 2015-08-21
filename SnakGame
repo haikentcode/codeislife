@@ -1,0 +1,1057 @@
+/*
+----><-----------------
+@HIOS PRODUCT#GAME(SANKE)
+version 1.0.0 ( using c++)
+CODER=HAIKENT
+DATE=13MAY2014 7:20PM
+to--> 0.5t
+-----><----------------
+*/
+
+
+#include<iostream>
+#include<windows.h>
+#include<conio.h>
+#include<time.h>
+
+using namespace std;
+struct node
+{
+    int x,y;
+    char ch;
+    node *link;
+}*p;
+
+ void gotoxy(int x,int y)
+      {
+         //function to go x,y position of console
+           COORD coord;
+           coord.X = x;
+           coord.Y = y;
+           SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
+      }
+
+class hiosgamebox
+{
+    int bminx,bminy,bmaxx,bmaxy,BS;//BS score body bottom j
+
+public:
+
+      hiosgamebox(int bmx,int bmy,int bMx,int bMy,int bs)
+                         {
+                              bminx=bmx;
+                              bminy=bmy;
+                              bmaxx=bMx;
+                              bmaxy=bMy;
+                              BS=bs;
+                        }
+
+       char getchar(int i,int j)
+         {
+
+          if(i==bminx)
+             {
+                if(j==bminy) return char(218);//L top
+                if(j==bmaxy) return char(192);//L bottom
+             }
+
+         if(i==bmaxx)
+         {
+                if(j==bminy) return char(191);//R top
+                if(j==bmaxy) return char(217);//R bottom
+         }
+
+
+
+          if(j>bminy&&j<bmaxy)
+          {
+
+            if(i==bminx) {if(j==bmaxy-BS) return char(195); else return char(179); }
+
+            if(i==bmaxx) {if(j==bmaxy-BS) return char(180); else return char(179); }
+
+          }
+
+          if(j==bmaxy) return char(196);
+          if(j==bmaxy-BS) return char(196);
+          if(j==bminy) return char(196);
+
+          char ch=' ';
+          return ch;
+     }
+
+        void drawbox()
+         {
+
+          for(int i=bminx;i<=bmaxx;i++)
+          {
+             for(int j=bminy;j<=bmaxy;j++)
+             {
+
+                 gotoxy(i,j);
+                 char ch=getchar(i,j);
+                 cout<<ch;
+             }
+          }
+
+          cout<<endl<<endl;
+
+         }
+
+
+};
+
+class snackLevel
+{
+     int bminx,bminy,bmaxx,bmaxy,BS;
+     int level=1;
+     node *wallPstart,*wallpend;
+ public:
+      snackLevel()
+      {
+          wallPstart=NULL;
+          wallpend=NULL;
+          level=1;
+
+      }
+      snackLevel(int l)
+      {
+          level=l;
+          wallPstart=NULL;
+          wallpend=NULL;
+      }
+      void drawlevel(int sbminx,int sbminy,int sbmaxx,int sbmaxy,int sBS)
+      {
+          bminx=sbminx;
+          bminy=sbminy;
+          bmaxx=sbmaxx;
+          bmaxy=sbmaxy;
+          BS=sBS;
+          draw();
+      }
+
+      void add(node *k)
+      {
+
+           if(wallPstart==NULL)
+           {
+               wallPstart=k;
+               wallpend=k;
+           }
+           else
+           {
+               wallpend->link=k;
+               wallpend=k;
+           }
+
+       }
+
+
+
+       bool isoverlap(int i,int j)
+       {
+
+
+            p=wallPstart;
+
+            while(p!=NULL)
+            {
+               if((p->x==i)&&(p->y==j)) return true;
+               p=p->link;
+            }
+
+
+           return false;
+
+       }
+       void inclevel(){level++;}
+
+      void draw()
+      {
+          switch(level)
+          {
+
+          case 1:
+                 {
+                     wallPstart=NULL;
+                     wallpend=NULL;
+
+                     //level one blank box;
+                 }
+                 break;
+
+          case 2:
+               {
+                   //LEVEL 2
+                   wallPstart=NULL;
+                   wallpend=NULL;
+
+                for(int i=bminx+5;i<bmaxx-5;i++)
+                {
+                   int j=bminy+5;
+
+                     p=new node;
+                     p->x=i;
+                     p->y=j;
+                     p->ch=(178);
+                     add(p);
+
+                   gotoxy(i,j);cout<<char(178);
+
+
+                }
+
+                for(int i=bminx+5;i<bmaxx-5;i++)
+                {
+                  int j=bmaxy-BS-5;
+
+                    p=new node;
+                     p->x=i;
+                     p->y=j;
+                     p->ch=(178);
+                     add(p);
+
+                   gotoxy(i,j);cout<<char(178);
+
+
+                }
+
+
+               }
+                break;
+
+          case 3:
+              {
+                  wallPstart=NULL;
+                  wallpend=NULL;
+
+               for(int i=bminx+5;i<bmaxx-5;i++)
+                {
+                   int j=bminy+5;
+
+                     p=new node;
+                     p->x=i;
+                     p->y=j;
+                     p->ch=(178);
+                     add(p);
+
+                   gotoxy(i,j);cout<<char(178);
+
+
+                }
+
+                for(int i=bminx+5;i<bmaxx-5;i++)
+                {
+                  int j=bmaxy-BS-5;
+
+                    p=new node;
+                     p->x=i;
+                     p->y=j;
+                     p->ch=(178);
+                     add(p);
+
+                   gotoxy(i,j);cout<<char(178);
+
+
+                }
+
+                for(int j=bminy+6;j<=bminy+10;j++)
+                {
+                    int i=bminx+6;
+
+                    p=new node;
+                     p->x=i;
+                     p->y=j;
+                     p->ch=(178);
+                     add(p);
+                   gotoxy(i,j);cout<<char(178);
+
+                }
+
+
+              for(int j=bmaxy-BS-5;j>bmaxy-BS-10;j--)
+                {
+                    int i=bmaxx-6;
+
+                     p=new node;
+                     p->x=i;
+                     p->y=j;
+                     p->ch=(178);
+                     add(p);
+                   gotoxy(i,j);cout<<char(178);
+
+                }
+              }
+              break;
+          case 4:
+              {
+                    wallPstart=NULL;
+                    wallpend=NULL;
+
+                    for(int j=bminy+6;j<=bminy+15;j++)
+                     {
+                    int i=bminx+6;
+
+                     p=new node;
+                     p->x=i;
+                     p->y=j;
+                     p->ch=(178);
+                     add(p);
+                   gotoxy(i,j);cout<<char(178);
+
+                   }
+
+
+              for(int j=bminy+6;j<=bminy+15;j++)
+                {
+                    int i=bmaxx-6;
+
+                     p=new node;
+                     p->x=i;
+                     p->y=j;
+                     p->ch=(178);
+                     add(p);
+                   gotoxy(i,j);cout<<char(178);
+
+                }
+
+                for(int i=bminx+15;i<bmaxx-15;i++)
+                {
+                    int j=(bmaxy-BS)/2-2;
+
+                    p=new node;
+                     p->x=i;
+                     p->y=j;
+                     p->ch=(178);
+                     add(p);
+                   gotoxy(i,j);cout<<char(178);
+
+                }
+
+                for(int i=bminx+15;i<bmaxx-15;i++)
+                {
+                    int j=(bmaxy-BS)/2+10;
+
+                    p=new node;
+                     p->x=i;
+                     p->y=j;
+                     p->ch=(178);
+                     add(p);
+                   gotoxy(i,j);cout<<char(178);
+
+                }
+
+
+              }
+            break;
+
+
+
+
+          }
+
+      }
+
+
+
+
+
+
+
+};
+
+class snake
+{
+  int bminx,bminy,bmaxx,bmaxy,BS;
+  node *snackhead,*snacktail;
+  int snacklength;
+  int score=0;
+  int level=1;
+  int foodr=5;
+  int speed;
+  int direction;
+  #define LEFT 77
+  #define RIGHT 75
+  #define UP 72
+  #define DOWN 80
+  bool game=true;
+  int maxlevel=4;
+
+  char BODYLR=char(4);
+  char BODYTD=char(4);
+  int foodx;
+  int foody;
+
+   snackLevel DSL;
+
+  public:
+       snake()
+       {
+           bminx=10;
+           bminy=5;
+           bmaxx=60;
+           bmaxy=30;
+           BS=3;
+           snackhead=NULL;
+           direction=LEFT;
+           DSL=level;
+           speed=0;
+
+       }
+       snake(int l)
+       {
+           snackhead=NULL;
+           direction=LEFT;
+           bminx=10;
+           bminy=5;
+           bmaxx=60;
+           bmaxy=30;
+           BS=3;
+           hiosgamebox box(bminx,bminy,bmaxx,bmaxy,BS);
+           color(10);
+            box.drawbox();
+            DSL=level;
+            speed=0;
+
+
+       }
+       void addsnackdot(node *k)
+       {
+           if(snackhead==NULL)
+           {
+               snackhead=p;
+               snacktail=p;
+           }
+           else
+           {
+               snacktail->link=p;
+               snacktail=p;
+           }
+
+       }
+
+
+
+     void babysnack()
+     {
+
+           snackhead=NULL;
+           snacktail=NULL;
+           p=new node;
+           p->ch=char(4);
+           p->x=bminx+10;
+           p->link=NULL;
+           p->y=bminy+10;
+           addsnackdot(p);
+
+           p=new node;
+           p->ch=BODYLR;
+           p->x=bminx+4;
+           p->link=NULL;
+           p->y=bminy+5;
+           addsnackdot(p);
+
+           p=new node;
+           p->ch=BODYLR;
+           p->x=bminx+3;
+           p->link=NULL;
+           p->y=bminy+5;
+           addsnackdot(p);
+     }
+
+
+       void start()
+       {
+
+           babysnack();
+           mainu();
+           scorboard();
+
+       }
+       void color(int k)
+       {
+           HANDLE  hConsole;
+          hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+         SetConsoleTextAttribute(hConsole, k);
+       }
+     void hioshalmark()
+     {
+
+      color(2);
+       gotoxy(bminx+1,bminy+1);cout<<" ################ ";
+      color(4);
+       cout<<"SNAKER 1.0";
+       color(2);
+       cout<<" ################";
+      color(5);
+      gotoxy(bminx+10,bminy+11);cout<<"MOVE UP DOWN :"<<char(24)<<" "<<char(25)<<" SELCECT:"<<"ENTER";
+      for(int i=bminx+1;i<bmaxx;i++)
+                     {gotoxy(i,bminy+12);cout<<char(205);}
+      color(6);
+      gotoxy(bminx+14,bminy+14);cout<<"HIOS PRODUCT@GAME(c++)";
+      color(7);
+      gotoxy(bminx+10,bminy+16);cout<<"WORK HARD HAVE FUN MAKE HISTORY";
+      color(8);
+      gotoxy(bminx+18,bminy+18);cout<<"KEEP CODING... ";
+      color(9);
+      gotoxy(bminx+12,bminy+20);cout<<"haikent 16/5/2014 for gudan";
+
+     }
+     void mainu()
+     {
+
+         char s[][10]={"NEW GAME","CONTINUE","SPEED","LEVEL","EXIT"};
+        static int pp=0;
+           hioshalmark();
+           scorboard();
+
+         x:
+             color(10);
+        for(int i=0;i<5;i++)
+        {
+            gotoxy(bminx+16,bminy+5+pp);cout<<"-->";
+            gotoxy(bminx+20,bminy+5+i);
+            cout<<s[i];
+        }
+
+        char c=getch();
+
+        if(c==13)
+        {
+
+            switch(pp)
+            {
+            case 0:
+                {
+                     level=1;
+                     run();
+                }
+
+               break;
+            case 1:
+                {
+                    run();
+
+                }break;
+            case 2:
+                {
+
+                      clsgamebox();
+                 char ss[][1000]={"FAST","MEDIUM","SLOW"};
+                  int qq=0;
+                  Y:
+                  for(int i=0;i<3;i++)
+                 {
+                     gotoxy(bminx+16,bminy+5+qq);cout<<"-->";
+                     gotoxy(bminx+20,bminy+5+i);
+                     cout<<ss[i];
+                 }
+                  char ch;
+                  ch=getch();
+                  if(ch==13)
+                  {
+
+                    speed=qq;
+                    clsgamebox();
+                    mainu();
+                  }
+                  else
+                  {
+                       gotoxy(bminx+16,bminy+5+qq);cout<<' '<<' '<<' ';
+                      switch(ch)
+                            {
+                              case UP: qq=qq-1;break;
+                              case DOWN:  qq=qq+1;break;
+                              default:break;
+                           }
+
+                         if(qq<0)qq=2;
+                         if(qq>2)qq=0;
+
+                      goto Y;
+                  }
+
+
+
+                }break;
+
+            case 3:
+                {
+
+                    clsgamebox();
+                 char ss[][1000]={"LEVEL-1","LEVEL-2","LEVEL-3","LEVEL-4"};
+                  int qq=0;
+                  X:
+                  for(int i=0;i<4;i++)
+                 {
+                     gotoxy(bminx+16,bminy+5+qq);cout<<"-->";
+                     gotoxy(bminx+20,bminy+5+i);
+                     cout<<ss[i];
+                 }
+                  char ch;
+                  ch=getch();
+                  if(ch==13)
+                  {
+
+                    level=qq+1;
+                    clsgamebox();
+                    mainu();
+                  }
+                  else
+                  {
+                       gotoxy(bminx+16,bminy+5+qq);cout<<' '<<' '<<' ';
+                      switch(ch)
+                            {
+                              case UP: qq=qq-1;break;
+                              case DOWN:  qq=qq+1;break;
+                              default:break;
+                           }
+
+                         if(qq<0)qq=4;
+                         if(qq>3)qq=0;
+
+                      goto X;
+                  }
+
+
+                }
+                break;
+            case 4:
+                {
+
+                  system("cls");
+                  MessageBox(0,"THANK YOU TO PLAY !","HIOS",0);
+
+                }
+                break;
+            default:
+                break;
+            }
+        }
+        else
+            {
+
+              gotoxy(bminx+16,bminy+5+pp);cout<<' '<<' '<<' ';
+
+
+
+
+              switch(c)
+              {
+                case UP: pp=pp-1;break;
+                case DOWN:  pp=pp+1;break;
+                default:break;
+              }
+
+              if(pp<0)pp=4;
+              if(pp>4)pp=0;
+
+
+              goto x;
+            }
+
+
+    }
+
+      void run()
+      {
+                    clsgamebox();
+                    babysnack();
+                    foodr=10;
+                    DSL=level;
+                    direction=LEFT;
+                    color(12);
+                    DSL.drawlevel(bminx,bminy,bmaxx,bmaxy,BS);
+                    scorboard();
+                    newfoodcreate();
+                    move();
+
+      }
+       void showsnack()
+       {
+           color(13);
+           p=snackhead;
+
+           while(p!=NULL)
+           {
+               gotoxy(p->x,p->y); cout<<p->ch;
+               p=p->link;
+           }
+
+
+       }
+
+       void erasedot(node *k)
+       {
+           gotoxy(k->x,k->y);cout<<' ';
+       }
+
+       void movehead()
+       {
+
+           if(direction==LEFT){snackhead->x++;}
+            else if(direction==RIGHT){snackhead->x--;}
+            else if(direction==UP){snackhead->y--;}
+            else if(direction==DOWN){snackhead->y++;}
+          checkbound();
+
+       }
+       void checkbound()
+       {
+
+           if( snackhead->x<bminx+1) snackhead->x=bmaxx-1;
+           if( snackhead->x>bmaxx-1)  snackhead->x=bminx+1;
+           if( snackhead->y>bmaxy-BS-1) snackhead->y=bminy+1;
+
+           if(snackhead->y<bminy+1)snackhead->y=bmaxy-BS-1;
+       }
+
+       void movesnack()
+       {
+           p=snackhead;
+           int px=p->x;
+           int py=p->y;
+           p=p->link;
+
+
+           while(p!=NULL)
+           {
+            erasedot(p);
+            if(direction==LEFT||direction==RIGHT)p->ch=BODYLR; else p->ch=BODYTD;
+            swap(px,p->x);
+            swap(py,p->y);
+            p=p->link;
+
+           }
+            p=snackhead;
+            movehead();
+            erasedot(p);
+
+
+
+       }
+       void dealy()
+       {
+          // int ttl=10000000;
+           //ttl=ttl*(speed+1);
+           //for(int i=0;i<ttl;i++);
+
+           Sleep((speed+1)*50);
+       }
+       void food()
+       {
+
+           if(snackhead->x==foodx&&foody==snackhead->y)
+           {
+               newfoodcreate();
+               scorpanal();
+               p=new node;
+               p->link=NULL;
+               p->ch=BODYLR;
+               snacktail->link=p;
+               snacktail=p;
+               scorboard();
+
+           }
+
+           gotoxy(foodx,foody);cout<<char(3);
+
+
+       }
+
+
+       void scorpanal()
+       {
+           foodr--;
+           score+=5;
+
+           if(foodr==0)
+            {
+             nextlevel();
+            }
+
+
+       }
+
+       void levelfinishanimation()
+       {
+           clsgamebox();
+           int k=1;
+           MessageBox(0,"LEVEL COMPLETE !","HIOS",0);
+           do{
+              color(k);
+
+           gotoxy(bminx+5,bminy+8);cout<<"######### level="<<level<<" complete ..."<<"###########";
+           gotoxy(bminx+10,bminy+9);cout<<"PRESS ANY KEY TO CONTINUE...";
+           for(int i=0;i<100000000;i++);
+
+
+            if(k>14) k=1; else k++;
+           }while(!kbhit());
+           clsgamebox();
+           char c=getch();
+
+
+       }
+       void win()
+       {
+           clsgamebox();
+           gotoxy(bminx+10,bminy+6);
+           cout<<"CONGO YOU HAVE FINISHED ALL LEVEL ";
+           gotoxy(bminx+13,bminy+8);
+           cout<<"PRESS ANY KEY TO CONTINUE..";
+            char c=getch();
+            clsgamebox();
+            mainu();
+
+
+       }
+
+       void nextlevel()
+       {
+             level++;
+             if(level<=maxlevel)
+             {
+              levelfinishanimation();
+              run();
+
+             }
+             else win();
+       }
+       void newfoodcreate()
+       {
+
+           foodx=random(bminx,bmaxx);
+           foody=random(bminy,bmaxy-BS);
+
+             while(isnotvalidp())
+             {
+                if((foodx+1)<bmaxx) foodx++; else foodx--;
+                 if((foody+1)<bmaxy-BS) foody++; else foody--;
+
+             }
+       }
+
+       bool isnotvalidp()
+       {
+          if(DSL.isoverlap(foodx,foody)) return true;
+          if(isonsnak(foodx,foody)) return true;
+            return false;
+       }
+       bool isonsnak(int i,int j)
+       {
+         p=snackhead;
+         while(p!=NULL)
+         {
+             if(p->x==i&&p->y==j) return true;
+             p=p->link;
+         }
+         return false;
+       }
+
+       int random(int a,int b)
+       {
+              time_t T=time(NULL);
+              tm* timePtr=localtime(&T);
+              int s=timePtr->tm_sec;
+
+              int r=(s%b);
+              if(r<=a) r+=a+3;
+
+              return r;
+
+
+
+       }
+       void clsscorboard()
+       {
+
+           for(int i=bminx+1;i<bmaxx;i++)
+            for(int j=bmaxy-BS+1;j<bmaxy;j++)
+           {
+               gotoxy(i,j);cout<<' ';
+           }
+       }
+
+       void scorboard()
+       {
+           color(7);
+           clsscorboard();
+           gotoxy(bminx+2,bmaxy-BS+1);
+           cout<<"SCORE="<<score<<" "<<"FOOD="<<foodr<<" "<<" LEVEL="<<level<<" ";
+
+           switch(speed)
+           {
+        case 0: cout<<"SPEED=FAST";break;
+        case 1:cout<<"SPEED=MEDIUM";break;
+        case 2:cout<<"SPEED=SLOW";break;
+
+           }
+
+           cout<<" MAINU:T";
+       }
+
+
+
+
+       void iscolison()
+       {
+
+           p=snackhead;
+           int x=p->x;
+           int y=p->y;
+
+           p=p->link->link;
+
+           while(p!=NULL)
+           {
+
+            if((p->x)==x&&(p->y)==y)
+            {
+
+               cout<<char(7);
+               game=false;
+
+            }
+             p=p->link;
+
+           }
+
+            if(DSL.isoverlap(snackhead->x,snackhead->y)) game=false;
+
+       }
+
+       void move()
+       {
+
+           do
+           {
+
+
+                iscolison();
+                showsnack();
+                food();
+                dealy();
+                movesnack();
+
+
+
+
+
+           }while(!kbhit()&&game);
+
+           char c;
+
+
+          if(game)
+          {
+           c=getch();
+           isvalidkey(c);
+              move();
+
+          }
+          else gameover();
+
+       }
+       void clsgamebox()
+       {
+           for(int i=bminx+1;i<bmaxx;i++)
+            for(int j=bminy+1;j<bmaxy-BS;j++)
+           {
+               gotoxy(i,j); cout<<' ';
+           }
+
+       }
+       void gameover()
+       {
+            clsgamebox();
+            gotoxy(bminx+10,bminy+5);
+            cout<<"GAME OVER";
+
+            char c=getch();
+            foodr=10;
+            game=true;
+            clsgamebox();
+            start();
+
+       }
+       void isvalidkey(char k)
+       {
+
+
+
+
+           if((k==LEFT&&direction!=RIGHT)||(k==RIGHT&&direction!=LEFT)) direction=k;
+           if((k==UP&&direction!=DOWN)||(k==DOWN&&direction!=UP)) direction=k;
+
+           if(k=='T'||k=='t') {clsgamebox();mainu();}
+
+
+
+
+       }
+
+
+};
+
+
+class welcomehios
+{
+
+  int x,y,t;
+  public:
+     welcomehios()
+       {
+
+        }
+     welcomehios(int a,int b,int c)
+     {
+         x=a;
+         y=b;
+         t=c;
+     }
+
+
+     void color(int k)
+       {
+           HANDLE  hConsole;
+          hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+         SetConsoleTextAttribute(hConsole, k);
+       }
+      void msg()
+      {
+
+
+
+
+
+          gotoxy(x,y);
+
+
+          char s[]="WELCOME TO HIOS";
+
+          for(int i=0;s[i]!=NULL;i++)
+          {
+              color(15-i%15);
+              for(int j=0;j<5000000*t;j++);
+              cout<<s[i];
+          }
+          color(4);
+          gotoxy(x,y+2);cout<<"press any key to continue...";
+         do{}while(!kbhit());
+         char c=getch();
+      }
+
+};
+
+int main()
+{
+   //system("Color 1A");
+   welcomehios H(20,10,1);
+   H.msg();
+    snake s;
+    s=1;
+    s.start();
+
+
+}

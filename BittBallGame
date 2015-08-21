@@ -1,0 +1,839 @@
+/*
+----><-----------------
+@HIOS PRODUCT#GAME(Bitball)
+version 1.0.0 ( using c++)
+CODER=HAIKENT
+DATE=19MAY2014 7:34PM
+to--> 0.5t
+-----><----------------
+*/
+
+
+#include<iostream>
+#include<windows.h>
+#include<conio.h>
+#include<time.h>
+
+using namespace std;
+struct node
+{
+    int x,y;
+    char ch;
+    node *link;
+}*p;
+
+
+void color(int k)
+       {
+           HANDLE  hConsole;
+          hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+         SetConsoleTextAttribute(hConsole, k);
+       }
+ void gotoxy(int x,int y)
+      {
+         //function to go x,y position of console
+           COORD coord;
+           coord.X = x;
+           coord.Y = y;
+           SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
+      }
+
+class hiosgamebox
+{
+    int bminx,bminy,bmaxx,bmaxy,BS;//BS score body bottom j
+
+public:
+
+      hiosgamebox(int bmx,int bmy,int bMx,int bMy,int bs)
+                         {
+                              bminx=bmx;
+                              bminy=bmy;
+                              bmaxx=bMx;
+                              bmaxy=bMy;
+                              BS=bs;
+                        }
+
+       char getchar(int i,int j)
+         {
+
+          if(i==bminx)
+             {
+                if(j==bminy) return char(218);//L top
+                if(j==bmaxy) return char(192);//L bottom
+             }
+
+         if(i==bmaxx)
+         {
+                if(j==bminy) return char(191);//R top
+                if(j==bmaxy) return char(217);//R bottom
+         }
+
+
+
+          if(j>bminy&&j<bmaxy)
+          {
+
+            if(i==bminx) {if(j==bmaxy-BS) return char(195); else return char(179); }
+
+            if(i==bmaxx) {if(j==bmaxy-BS) return char(180); else return char(179); }
+
+          }
+
+          if(j==bmaxy) return char(196);
+          if(j==bmaxy-BS) return char(196);
+          if(j==bminy) return char(196);
+
+          char ch=' ';
+          return ch;
+     }
+
+        void drawbox()
+         {
+
+          for(int i=bminx;i<=bmaxx;i++)
+          {
+             for(int j=bminy;j<=bmaxy;j++)
+             {
+
+                 gotoxy(i,j);
+                 char ch=getchar(i,j);
+                 cout<<ch;
+             }
+          }
+
+          cout<<endl<<endl;
+
+         }
+
+
+
+};
+
+
+
+class welcomehios
+{
+
+  int x,y,t;
+
+  public:
+     welcomehios()
+       {
+
+        }
+     welcomehios(int a,int b,int c)
+     {
+         x=a;
+         y=b;
+         t=c;
+
+     }
+
+      void msg()
+      {
+
+
+
+
+
+          gotoxy(x,y);
+
+
+          char s[]="WELCOME TO HIOS";
+
+          for(int i=0;s[i]!=NULL;i++)
+          {
+              color(15-i%15);
+              for(int j=0;j<5000000*t;j++);
+              cout<<s[i];
+          }
+          color(4);
+          gotoxy(x,y+2);cout<<"press any key to continue...";
+         do{}while(!kbhit());
+         char c=getch();
+      }
+
+};
+
+
+
+class Bitball
+{
+   int bminx,bminy,bmaxx,bmaxy,BS;
+   #define LEFT 77
+   #define RIGHT 75
+   #define UP 72
+   #define DOWN 80
+
+   bool game=true;
+   int level=1;
+   int speed=1;
+
+   struct bbat
+      {
+        int bigx;
+        int endx;
+        int y;
+        int k;
+
+      };
+
+   struct packet
+   {
+       int y;
+       int xbig,xend;
+       int k;
+       packet *link;
+   }*p;
+
+   enum balldirection
+   {
+     left_down,
+     left_up,
+     right_down,
+     right_up
+   };
+   int myballdirection=left_up;
+
+   struct myball //ball cordinate
+   {
+       int x;
+       int y;
+       int k;
+   };
+   myball ball;
+   packet *pstart,*pend;
+   bbat  mybat;
+  public:
+
+      Bitball()
+      {
+           bminx=10;
+           bminy=5;
+           bmaxx=61;
+           bmaxy=30;
+           BS=3;
+           pstart=NULL;
+           pend=NULL;
+           welcomehios w(bminx+15,bminy+8,1);
+           w.msg();
+           color(7);
+           hiosgamebox H(bminx,bminy,bmaxx,bmaxy,BS);
+           H.drawbox();
+
+
+        }
+
+
+  public:
+
+    void fillpacket()
+    {
+        pstart=NULL;
+
+      for(int i=1;i<=level*2 ;i++)
+      {
+
+          int y=bminy+i;
+
+          int xbg=bminx+1;
+          int xed=xbg+4;
+           int clr;
+          if(i%2==0)  clr=14; else clr==1;
+          while(xed<=bmaxx-1)
+          {
+              p=new packet;
+              p->xbig=xbg;
+              p->xend=xed;
+              p->y=y;
+              p->k=clr%15;
+              p->link=NULL;
+              addpacket(p);
+              xbg=xed+1;
+              xed=xbg+4;
+             if(i%2==0)  clr--; else clr++;
+          }
+
+
+
+      }
+
+    }
+      void clsgamebox()
+         {
+             for(int i=bminx+1;i<bmaxx;i++)\
+                for(int j=bminy+1;j<bmaxy-BS;j++)
+             {
+                 gotoxy(i,j);cout<<' ';
+             }
+         }
+
+
+    void showmybat()
+    {
+     showBigToEnd(mybat.bigx,mybat.endx,mybat.y,char(219),mybat.k);
+
+    }
+
+    void showpacket()
+    {
+        p=pstart;
+        int i=10;
+        while(p!=NULL)
+        {
+
+            showBigToEnd(p->xbig,p->xend,p->y,char(219),p->k);
+            p=p->link;
+            i++;
+        }
+
+    }
+    void showBigToEnd(int big,int end,int y,char ch,int k)
+    {
+
+        for(int i=big;i<=end;i++)
+        {
+
+            gotoxy(i,y);
+            color(k);
+            cout<<ch;
+        }
+    }
+
+    void addpacket(packet *pkt)
+    {
+
+        if(pstart==NULL)
+        {
+          pstart=pkt;
+          pend=pkt;
+        }
+
+        else
+        {
+         pend->link=pkt;
+         pend=pkt;
+        }
+
+    }
+
+    void start()
+    {
+
+      mainu();
+    }
+
+
+    void run()
+    {
+
+           mybat.bigx=(bminx+bmaxx)/2-5;
+           mybat.endx=(bminx+bmaxx)/2+5;
+           mybat.y=bmaxy-BS-1;
+           mybat.k=6;
+
+           ball.x=(mybat.bigx+mybat.endx)/2;
+           ball.y=mybat.y-1;
+
+           ball.k=7;
+        clsgamebox();
+        game=true;
+
+        showpacket();
+        showmybat();
+        move();
+    }
+
+    void removepacket(packet *k)
+    {
+
+        p=pstart;
+        if(p==k){pstart=k->link;}
+        else
+        {
+            while(p->link!=k) p=p->link;
+
+            p->link=k->link;
+        }
+
+
+        erasebigToend(k->xbig,k->xend,k->y);
+
+
+        if(pstart==NULL)
+        {
+            gotoxy(bminx+15,bminy+8);
+            cout<<"WINNER";
+            char c=getch();
+            clsgamebox();
+            mainu();
+        }
+    }
+
+    void erasebigToend(int big,int end,int y)
+    {
+
+         for(int i=big;i<=end;i++)
+        {
+
+            gotoxy(i,y); cout<<' ';
+        }
+    }
+    bool onpacket(int x,int y)
+    {
+
+
+        p=pstart;
+
+        while(p!=NULL)
+            {
+
+                int xbd=p->xbig;
+                int xed=p->xend;
+                int py=p->y;
+                if(x>=xbd&&x<=xed&&py==y){removepacket(p);return true;}
+                p=p->link;
+            }
+
+            return false;
+    }
+    bool onbat(int x,int y)
+    {
+        if(x>=mybat.bigx&&x<=mybat.endx&&y==mybat.y) { return true; }
+        else return false;
+    }
+
+    bool chkcollision(int d,int x,int y)
+    {
+       switch(d)
+       {
+       case left_up:
+        {
+          if(x==bminx){ myballdirection=right_up; return false; }
+          if(onpacket(x,y)){ myballdirection=left_down; return false;}
+          if(y==bminy){myballdirection=left_down;return false;}
+
+              return true;
+
+
+        }break;
+       case left_down:
+        {
+            if(x==bminx){myballdirection=right_down;return false;}
+            if(onbat(x,y)){myballdirection=left_up;return false;}
+            if(onpacket(x,y)){myballdirection=left_up;return false;}
+
+                  return true;
+
+
+
+        }break;
+       case right_up:
+        {
+            if(x==bmaxx){myballdirection=left_up;return false;}
+            if(onpacket(x,y)){myballdirection=right_down;return false;}
+            if(y==bminy){myballdirection=right_down;return false;}
+
+                return true;
+
+
+        }break;
+       case right_down:
+        {
+            if(x==bmaxx){myballdirection=left_down;return false;}
+            if(onbat(x,y)){myballdirection=right_up;return false;}
+            if(onpacket(x,y)){myballdirection=right_up;return false;}
+
+                 return true;
+
+
+        }break;
+
+       }
+    }
+     void moveball()
+     {
+
+         switch(myballdirection)
+         {
+
+         case left_down:
+            {
+              if(chkcollision(myballdirection,ball.x-1,ball.y+1))
+                {
+                gotoxy(ball.x,ball.y);cout<<' ';
+                ball.x--;
+                ball.y++;
+               }
+
+
+
+            }break;
+
+         case left_up:
+            {
+               if(chkcollision(myballdirection,ball.x-1,ball.y-1))
+               {
+                   gotoxy(ball.x,ball.y);cout<<' ';
+                   ball.x--;
+                   ball.y--;
+               }
+
+
+
+            }break;
+         case right_down:
+            {
+             if(chkcollision(myballdirection,ball.x+1,ball.y+1))
+             {
+                   gotoxy(ball.x,ball.y);cout<<' ';
+                   ball.x++;
+                   ball.y++;
+             }
+
+
+            }break;
+         case right_up:
+            {
+            if(chkcollision(myballdirection,ball.x+1,ball.y-1))
+            {
+                gotoxy(ball.x,ball.y);cout<<' ';
+                ball.x++;
+                ball.y--;
+            }
+
+
+            }break;
+
+          default:
+              {
+
+              }break;
+
+
+
+         }
+
+
+     }
+
+    void move()
+    {
+        if(game)
+        {
+
+           showmybat();
+
+
+           do
+             {
+               ballshow();
+                for(int i=0;i<10000000*(speed+1);i++);
+
+               moveball();
+
+               if(ball.y>mybat.y){game=false;}
+
+              }while(!kbhit()&&game);
+
+
+               if(game)
+               {
+                   char ch;
+                ch=getch();
+                mykbhit(ch);
+                move();
+               }
+               else
+               {
+                   clsgamebox();
+                   gameover();
+               }
+        }
+
+
+
+
+
+    }
+
+    void gameover()
+    {
+
+        gotoxy(bminx+15,bminy+8);
+        cout<<"GAME OVER";
+        gotoxy(bminx+15,bminy+10);
+        cout<<"press any key to play continue....";
+        char c=getch();
+        run();
+    }
+
+    void ballshow()
+    {
+        gotoxy(ball.x,ball.y);
+        cout<<char(178);
+    }
+
+    void mykbhit(char k)
+    {
+
+
+        if(k==LEFT&&(mybat.endx+10)<=bmaxx)
+        {
+
+             erasebigToend(mybat.endx-10,mybat.endx,mybat.y);
+             mybat.bigx+=10;
+             mybat.endx+=10;
+
+
+
+
+
+        }
+        else if(k==RIGHT&&(mybat.bigx-10)>=bminx)
+        {
+                erasebigToend(mybat.bigx,mybat.bigx+10,mybat.y);
+                mybat.bigx-=10;
+                mybat.endx-=10;
+
+
+
+
+
+        }
+
+        else  if(k=='t'||k=='T'){clsgamebox();mainu();}
+
+    }
+
+
+
+
+    void hioshalmark()
+     {
+
+      color(2);
+       gotoxy(bminx+1,bminy+1);cout<<" ################ ";
+      color(8);
+       cout<<"BitBall 1.0";
+       color(2);
+       cout<<" ################";
+      color(5);
+      gotoxy(bminx+10,bminy+11);cout<<"MOVE UP DOWN :"<<char(24)<<" "<<char(25)<<" SELCECT:"<<"ENTER";
+      for(int i=bminx+1;i<bmaxx;i++)
+                     {gotoxy(i,bminy+12);cout<<char(205);}
+      color(6);
+      gotoxy(bminx+14,bminy+14);cout<<"HIOS PRODUCT@GAME(c++)";
+      color(7);
+      gotoxy(bminx+10,bminy+16);cout<<"WORK HARD HAVE FUN MAKE HISTORY";
+      color(8);
+      gotoxy(bminx+8,bminy+18);cout<<"KEEP CODING <DO COOL THING TAHT MATER>";
+      color(9);
+      gotoxy(bminx+12,bminy+20);cout<<"haikent 24/5/2014 for gudan";
+
+     }
+     void mainu()
+     {
+
+         char s[][10]={"NEW GAME","CONTINUE","SPEED","LEVEL","EXIT"};
+        static int pp=0;
+           hioshalmark();
+           scorboard();
+
+         x:
+             color(10);
+        for(int i=0;i<5;i++)
+        {
+            gotoxy(bminx+16,bminy+5+pp);cout<<"-->";
+            gotoxy(bminx+20,bminy+5+i);
+            cout<<s[i];
+        }
+
+        char c=getch();
+
+        if(c==13)
+        {
+
+            switch(pp)
+            {
+            case 0:
+                {
+                     clsgamebox();
+                     fillpacket();
+                     run();
+                }
+
+               break;
+            case 1:
+                {
+
+                    run();
+
+                }break;
+            case 2:
+                {
+
+                      clsgamebox();
+                 char ss[][1000]={"FAST","MEDIUM","SLOW"};
+                  int qq=0;
+                  Y:
+                  for(int i=0;i<3;i++)
+                 {
+                     gotoxy(bminx+16,bminy+5+qq);cout<<"-->";
+                     gotoxy(bminx+20,bminy+5+i);
+                     cout<<ss[i];
+                 }
+                  char ch;
+                  ch=getch();
+                  if(ch==13)
+                  {
+
+                    speed=qq;
+                    clsgamebox();
+                    mainu();
+                  }
+                  else
+                  {
+                       gotoxy(bminx+16,bminy+5+qq);cout<<' '<<' '<<' ';
+                      switch(ch)
+                            {
+                              case UP: qq=qq-1;break;
+                              case DOWN:  qq=qq+1;break;
+                              default:break;
+                           }
+
+                         if(qq<0)qq=2;
+                         if(qq>2)qq=0;
+
+                      goto Y;
+                  }
+
+
+
+                }break;
+
+            case 3:
+                {
+
+                    clsgamebox();
+                 char ss[][1000]={"LEVEL-1","LEVEL-2","LEVEL-3","LEVEL-4"};
+                  int qq=0;
+                  X:
+                  for(int i=0;i<4;i++)
+                 {
+                     gotoxy(bminx+16,bminy+5+qq);cout<<"-->";
+                     gotoxy(bminx+20,bminy+5+i);
+                     cout<<ss[i];
+                 }
+                  char ch;
+                  ch=getch();
+                  if(ch==13)
+                  {
+
+                    level=qq+1;
+                    clsgamebox();
+                    mainu();
+                  }
+                  else
+                  {
+                       gotoxy(bminx+16,bminy+5+qq);cout<<' '<<' '<<' ';
+                      switch(ch)
+                            {
+                              case UP: qq=qq-1;break;
+                              case DOWN:  qq=qq+1;break;
+                              default:break;
+                           }
+
+                         if(qq<0)qq=4;
+                         if(qq>3)qq=0;
+
+                      goto X;
+                  }
+
+
+                }
+                break;
+            case 4:
+                {
+
+                  system("cls");
+                  MessageBox(0,"THANK YOU TO PLAY !","HIOS",0);
+
+                }
+                break;
+            default:
+                break;
+            }
+        }
+        else
+            {
+
+              gotoxy(bminx+16,bminy+5+pp);cout<<' '<<' '<<' ';
+
+
+
+
+              switch(c)
+              {
+                case UP: pp=pp-1;break;
+                case DOWN:  pp=pp+1;break;
+                default:break;
+              }
+
+              if(pp<0)pp=4;
+              if(pp>4)pp=0;
+
+
+              goto x;
+            }
+
+
+    }
+
+    void scorboard()
+       {
+           color(7);
+           clsscorboard();
+           gotoxy(bminx+2,bmaxy-BS+1);
+           cout<<" ENJOY SUMMER "<<" LEVEL="<<level<<" ";
+
+           switch(speed)
+           {
+        case 0: cout<<"SPEED=FAST";break;
+        case 1:cout<<"SPEED=MEDIUM";break;
+        case 2:cout<<"SPEED=SLOW";break;
+
+           }
+
+           cout<<" MAINU:T";
+       }
+      void clsscorboard()
+       {
+
+           for(int i=bminx+1;i<bmaxx;i++)
+            for(int j=bmaxy-BS+1;j<bmaxy;j++)
+           {
+               gotoxy(i,j);cout<<' ';
+           }
+       }
+
+
+
+};
+
+
+
+
+
+
+int main()
+
+
+{
+
+    Bitball s;
+
+    s.start();
+
+
+}

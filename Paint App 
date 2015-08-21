@@ -1,0 +1,761 @@
+/*
+
+@HIOS PRODUCT (PAINT USING C++ WINAPI)
+@AUTHORE haikent(hiteshnitj16@gmail.com)
+@start(25/jun/2014) end()
+@to my swt angel
+
+*/
+
+
+//Heade file and Macro Defination --------------- {
+
+#include <windows.h>
+#include <cmath>
+#include<conio.h>
+#include "header/shapealgo.h"
+#include<graphics.h>
+#define CURSOR  IDC_CROSS
+
+
+#define RRGB RGB(rand()%255,rand()%255,rand()%255)
+#define ROUND(a) ((int) (a + 0.5))
+
+
+
+// ----------------------------------------------}
+
+namespace haikent
+{
+
+
+static HWND sHwnd;
+static HINSTANCE HInstance;
+HBITMAP hBitmap = NULL;
+
+
+
+struct colorlist
+{
+  int r,g,b;
+};
+
+
+
+struct bound
+   {
+
+       int x,y,width,height;
+   };
+
+
+
+
+colorlist maincolor[]={{255,0,0},{0,255,0},{0,0,255},{255,255,0},{0,255,255},{255,0,255},{100,100,80},{255,255,255},{10,50,100},{30,60,100},{100,200,250}};
+bound cpBlock[8];
+static int prex=0,prey=0;
+
+COLORREF drawingToolsColor;
+
+enum drawingToolsList
+                    {
+
+                    pencil,         //code 0
+                    rubber,         //code 1
+                    brush,          //code 2
+                    Shape_circle,   //code 3
+                    Shape_rec,     //code  4
+                    Shape_cube,    //code 5
+
+                    };
+
+
+
+drawingToolsList drawingToolsIs=pencil;
+
+bool Isdraw=false;
+
+struct drawingToolsBound
+{
+    bound bb;
+    drawingToolsList dtl;
+};
+
+
+
+
+bound dcp; // draw_COLOR_PICKER
+bound ddb; // draw_Drowing_BOX
+bound dtp; //draw_tool_Box
+bound dsp;// draw shap picker
+
+
+
+
+const COLORREF colorRed = RGB(255, 0, 0);
+
+
+bool _inbound(bound b,int x,int y)
+ {
+
+     if(x>b.x&&y>b.y&&x<b.x+b.width&&y<b.y+b.height)
+     {
+         return true;
+     }
+     else
+     {
+         return false;
+     }
+ }
+
+
+
+
+
+
+
+
+}
+
+using namespace haikent;
+
+
+class TextWriter
+{
+private:
+
+    HFONT hfont;
+    COLORREF textColor;
+
+public:
+
+    TextWriter(int fs=15) : hfont(NULL), textColor(RGB(100,200,50))
+    {
+        // initialize font here (I prefer CreateFontIndirect to CreateFont,
+        // as it's easier to deal with unused params using memset.)
+        LOGFONT logFont;
+        memset(&logFont, 0, sizeof(logFont));
+        logFont.lfHeight = -fs; // see PS
+        logFont.lfWeight = FW_BOLD;
+        strcpy(logFont.lfFaceName, "segoe print");
+        hfont = CreateFontIndirect(&logFont);
+    }
+
+    ~TextWriter()
+    {
+        DeleteObject(hfont);
+    }
+
+    void WriteText(HDC _hdc, int _Xpos, int _Ypos, char *_szMessage)
+    {
+        // set text color and font
+        COLORREF oldTextColor = SetTextColor(_hdc, textColor);
+        HFONT oldHFont = (HFONT)SelectObject(_hdc, hfont);
+
+        TextOut(_hdc, _Xpos, _Ypos, _szMessage, strlen(_szMessage));
+
+        // restore text color and font
+        SetTextColor(_hdc, oldTextColor);
+        SelectObject(_hdc, oldHFont);
+    }
+};
+
+
+class BUTTON
+{
+    HWND sHwnd;
+    HDC hdc;
+    TextWriter t;
+    drawingToolsList tools;
+public :
+      BUTTON(HWND hwnd)
+      {
+          sHwnd=hwnd;
+          hdc=GetDC(hwnd);
+
+      }
+
+      void ToolsIS(drawingToolsList dtl)
+      {
+
+          tools=dtl;
+      }
+
+      void draw(int x,int y,int w,int h)
+      {
+
+         shapealgo e(sHwnd,RGB(30,55,76));
+         e.drawrec(x,y,w,h);
+
+          switch(tools)
+          {
+        case pencil: break;
+        case rubber:break;
+        case brush:break;
+        case Shape_circle:break;
+        case Shape_cube:break;
+        case Shape_rec:break;
+
+
+         }
+
+     }
+
+
+};
+class draw_Color_Picker
+{
+   bound dcp;
+  COLORREF color;
+  HWND sHwnd;
+
+  public:
+      draw_Color_Picker(bound tdcp,HWND hwnd)
+       {
+
+          dcp=tdcp;
+          sHwnd=hwnd;
+          color=RGB(rand()%255,1,1);
+
+       }
+
+      void draw()
+      {
+
+            TextWriter t;
+            HDC hdc;
+            hdc=GetDC(sHwnd);
+            SetBkColor(hdc,RGB(0,0,0));
+            char a[]="Chose Color";
+            t.WriteText(hdc,dcp.x+5,dcp.y,&a[0]);
+
+          int x=dcp.x;
+          int y=dcp.y;
+          color=RRGB;
+          shapealgo e(sHwnd,color);
+          e.drawrec(x-5,y-5,dcp.width+5,dcp.height+5);
+          y+=28;
+       for(int i=0;i<8;i++,x+=25)
+       {
+
+        color=RGB(maincolor[i].r,maincolor[i].g,maincolor[i].b);
+        shapealgo e(sHwnd,color);
+        e.drawfillrec(x,y,20,20);
+        cpBlock[i]={x,y,20,20};
+
+       }
+
+
+
+
+      }
+
+};
+
+
+class draw_Tool_Picker
+{
+     bound dtp;
+    COLORREF color;
+    HWND sHwnd;
+
+   public:
+        draw_Tool_Picker(bound tdtp,HWND hwnd)
+       {
+           dtp=tdtp;
+          sHwnd=hwnd;
+       }
+
+       void draw()
+       {
+           shapealgo e(sHwnd,color=RGB(maincolor[1].r,maincolor[1].g,maincolor[1].b));
+           e.drawrec(dtp.x,dtp.y,dtp.width,dtp.height);
+
+           int x=dtp.x+5;
+           int y=dtp.y+5;
+
+          TextWriter t;
+          HDC hdc=GetDC(sHwnd);
+          SetBkColor(hdc,RGB(0,0,0));
+          t.WriteText(hdc,x+5,y+=5,"- Tools -");
+
+       BUTTON B(sHwnd);
+
+       B.ToolsIS(pencil); B.draw(x+5,y+=35,dtp.width-20,35);
+       B.ToolsIS(rubber); B.draw(x+5,y+=40,dtp.width-20,35);
+       B.ToolsIS(brush);  B.draw(x+5,y+=40,dtp.width-20,35);
+
+
+
+       }
+
+};
+
+
+class draw_Shape_Picker
+{
+
+  HWND sHwnd;
+  bound dsp;
+  COLORREF color;
+
+  public:
+      draw_Shape_Picker(bound tb,HWND hwnd)
+       {
+
+            dsp=tb;
+            sHwnd=hwnd;
+            color=RGB(22,200,88);
+
+
+      }
+
+      void draw()
+      {
+          shapealgo e(sHwnd,color);
+          e.drawrec(dsp.x,dsp.y,dsp.width,dsp.height);
+
+           int x=dsp.x+10;
+           int y=dsp.y+5;
+
+          TextWriter t;
+          HDC hdc=GetDC(sHwnd);
+          SetBkColor(hdc,RGB(0,0,0));
+          t.WriteText(hdc,x+5,y+=5,"- Shape -");
+
+           BUTTON B(sHwnd);
+
+           B.ToolsIS(Shape_circle); B.draw(x+5,y+=35,dsp.width-30,50);
+           B.ToolsIS(Shape_rec);    B.draw(x+5,y+=55,dsp.width-30,50);
+           B.ToolsIS(Shape_cube);   B.draw(x+5,y+=55,dsp.width-30,50);
+
+
+
+
+      }
+
+};
+
+
+class draw_Drawing_Board
+{
+  int x,y,height,width;
+   HWND sHwnd;
+   COLORREF color;
+
+  public:
+      draw_Drawing_Board(bound ddb,HWND hwnd)
+       {
+
+         x=ddb.x;
+         y=ddb.y;
+         height=ddb.height;
+         width=ddb.width;
+         sHwnd=hwnd;
+         color=RGB(200,200,200);
+       }
+
+       void draw()
+       {
+           shapealgo e(sHwnd,color);
+           e.drawrec(x,y,width,height);
+       }
+
+
+
+};
+
+class draw_Text_Writer
+{
+   bound dtw;
+    HWND sHwnd;
+
+   public:
+
+       draw_Text_Writer(bound tdtw,int w)
+       {
+           dtw=tdtw;
+       }
+
+};
+
+
+class drawMainBox
+{
+    bound mainbox;
+    HWND sHwnd;
+
+public:
+    drawMainBox(bound d,HWND hwnd)
+    {
+        mainbox=d;
+        sHwnd=hwnd;
+
+
+         drawingToolsColor=RGB(225,225,225);
+         dcp={mainbox.x+10,mainbox.y+10,200+21,50+11};
+         ddb={mainbox.x+350,mainbox.y+50,600,400};
+         dtp={mainbox.x+10,mainbox.y+dcp.y+10+dcp.height,100,220};
+         dsp={dtp.x+10+dtp.width,dtp.y,120,220};
+
+    }
+
+     void draw()
+       {
+
+          draw_Color_Picker colorpicker(dcp,sHwnd);
+          draw_Drawing_Board drawingboard(ddb,sHwnd);
+          draw_Tool_Picker drawtoolpicker(dtp,sHwnd);
+          draw_Shape_Picker drawshapepicker(dsp,sHwnd);
+
+          colorpicker.draw();
+          drawingboard.draw();
+          drawtoolpicker.draw();
+          drawshapepicker.draw();
+
+       }
+
+
+
+};
+//----------------------------------
+
+class paint
+{
+
+   HWND sHwnd;
+
+  public:
+
+    paint(HWND hwnd) { sHwnd=hwnd; }
+
+
+    void mousemove(int x,int y)
+       {
+
+
+         if(_inbound(ddb,x,y)&&Isdraw)
+             {
+
+              switch(drawingToolsIs)
+           {
+
+              case pencil:
+                {
+                   shapealgo e(sHwnd,drawingToolsColor);
+                                if(prex>0)
+                                     {
+
+                                     //e.drawLine(prex,prey,x,y);
+                                     e.drawBrushLine(prex,prey,x,y,1);
+                                     prex=x;
+                                     prey=y;
+                                     }
+                                   else
+                                   {
+                                     prex=x;
+                                     prey=y;
+                                   }
+
+
+
+                }break;
+
+
+              case brush:
+                {
+                    shapealgo e(sHwnd,drawingToolsColor);
+                                if(prex>0)
+                                     {
+
+                                    e.drawFillCircle(x,y,5);
+                                     prex=x;
+                                     prey=y;
+                                     }
+                                   else
+                                   {
+                                     prex=x;
+                                     prey=y;
+                                   }
+
+
+
+                }break;
+
+              case rubber:
+                {
+
+                    shapealgo e(sHwnd,RGB(255,255,255));
+                                if(prex>0)
+                                     {
+
+                                    e.drawfillrec(x,y,10,10);
+                                     prex=x;
+                                     prey=y;
+                                     }
+                                   else
+                                   {
+                                     prex=x;
+                                     prey=y;
+                                   }
+
+
+                }break;
+
+              case Shape_circle:
+                {
+
+
+                }break;
+
+              case Shape_rec:
+                {
+
+
+                }
+
+              case Shape_cube:
+                {
+
+                }break;
+
+
+          }
+
+            }
+       }
+
+
+
+
+
+
+       void mouseclick(int x,int y)
+       {
+           if(_inbound(dcp,x,y))
+           {
+
+              for(int i=0;i<9;i++)
+              {
+
+                  if(_inbound(cpBlock[i],x,y)) drawingToolsColor=RGB(maincolor[i].r,maincolor[i].g,maincolor[i].b);
+              }
+
+
+           }
+
+       }
+
+
+
+
+
+
+
+
+
+
+
+};
+
+
+
+
+//---- message ----------------------------
+
+
+/* Window Procedure WndProc */
+
+LRESULT CALLBACK WndProc(HWND hwnd,UINT message,WPARAM wParam,LPARAM lParam){
+
+    paint Pnt(hwnd);
+
+
+        POINT p;
+        GetCursorPos(&p);
+        ScreenToClient(hwnd,&p);
+
+    switch(message){
+
+
+
+
+        case WM_CREATE:
+
+                     break;
+
+        case WM_PAINT:{
+
+                       bound mainBound={0,0,300,600};
+                       drawMainBox DNB(mainBound,hwnd);
+                       DNB.draw();
+
+
+                       }break;
+
+    case WM_MOUSEMOVE:
+
+
+
+        Pnt.mousemove(p.x,p.y);
+
+
+
+         break;
+
+
+    case WM_SIZE:
+             break;
+    case WM_LBUTTONDOWN:
+        Isdraw=true;
+        Pnt.mouseclick(p.x,p.y);
+       break;
+
+
+    case WM_LBUTTONUP:
+        Isdraw=false;
+        prex=0;
+        prey=0;
+
+        break;
+
+	case WM_RBUTTONDOWN:
+		break;
+
+
+    case WM_CLOSE:
+		DestroyWindow(hwnd);
+		break;
+
+
+    case WM_DESTROY:
+        PostQuitMessage(0);
+		break;
+
+
+    case  WM_GETMINMAXINFO:
+       break;
+
+    default:;
+
+        break; // FAIL to call DefWindowProc //
+
+    }
+
+    return DefWindowProc(hwnd,message,wParam,lParam);
+
+}
+
+
+//-------------------------------------------
+
+
+
+
+//----------------------------------- main function ---------------------------------------
+
+
+
+
+
+int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR lpCmdLine,int iCmdShow){
+
+    static TCHAR szAppName[] = TEXT("HIOS PAINT");
+
+    WNDCLASS wndclass;
+
+    wndclass.style         = CS_HREDRAW|CS_VREDRAW;
+
+    wndclass.lpfnWndProc   = WndProc ;
+
+    wndclass.cbClsExtra    = 0 ;
+
+    wndclass.cbWndExtra    = 0 ;
+
+    wndclass.hInstance     = hInstance ;
+
+    wndclass.hIcon         = LoadIcon (NULL, IDI_APPLICATION) ;
+
+    wndclass.hCursor       = LoadCursor (NULL,CURSOR) ;
+
+    wndclass.hbrBackground = (HBRUSH) GetStockObject (BLACK_PEN) ;
+
+    wndclass.lpszMenuName  = NULL ;
+
+    wndclass.lpszClassName = szAppName ;
+
+
+    // Register the window //
+
+    if(!RegisterClass(&wndclass)){
+
+        MessageBox(NULL,"Registering the class failled","Error",MB_OK|MB_ICONERROR);
+
+        exit(0);
+
+    }
+
+
+    // CreateWindow //
+
+    HWND hwnd=CreateWindow(szAppName,"PAINT   HIOS@PRODUCT(C++ Using WinAPI)",
+
+                WS_OVERLAPPEDWINDOW,
+
+                 CW_USEDEFAULT,
+
+                 CW_USEDEFAULT,
+
+                 CW_USEDEFAULT,
+
+                 CW_USEDEFAULT,
+
+                 NULL,
+
+                 NULL,
+
+                 hInstance,
+
+                 NULL);
+
+
+    if(!hwnd){
+
+        MessageBox(NULL,"Window Creation Failed!","Error",MB_OK);
+
+        exit(0);
+
+    }
+
+    // ShowWindow and UpdateWindow //
+    HInstance=hInstance;
+
+
+
+    ShowWindow(hwnd,iCmdShow);
+    UpdateWindow(hwnd);
+
+
+
+
+    // Message Loop //
+
+    MSG msg;
+
+    while(GetMessage(&msg,NULL,0,0)){
+
+        TranslateMessage(&msg);
+
+        DispatchMessage(&msg);
+
+              }
+
+
+    /* return no error to the oper ating system */
+
+    return 0;
+
+}
+
+
+
